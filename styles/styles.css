@@ -1,0 +1,222 @@
+/* Style principal */
+.batch-preview-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.main-title {
+    font-size: 2.5em;
+    color: #2c5aa0;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.description {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 4px solid #007bff;
+    font-size: 1.1em;
+}
+
+/* Formulaire */
+.mform fieldset {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.mform legend {
+    background: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Page de prévisualisation */
+.preview-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.action-buttons {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.stats-section {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.stat-item {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+/* Tableau de prévisualisation */
+.preview-table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.preview-table th {
+    background: #343a40;
+    color: white;
+    padding: 15px;
+    text-align: left;
+}
+
+.preview-table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: top;
+}
+
+.preview-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.preview-table tr:hover {
+    background: #e3f2fd;
+    transition: background 0.3s ease;
+}
+
+.current-name {
+    color: #dc3545;
+    font-style: italic;
+}
+
+.new-name {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* Section SQL */
+.sql-section {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.sql-container {
+    margin: 20px 0;
+}
+
+.sql-textarea {
+    width: 100%;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    background: #2d3748;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 8px;
+    padding: 15px;
+    resize: vertical;
+}
+
+.sql-buttons {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.sql-buttons button {
+    margin: 0 10px;
+    padding: 10px 25px;
+    border-radius: 25px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sql-buttons .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.sql-buttons .btn-secondary {
+    background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+    color: white;
+}
+
+.sql-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .preview-table {
+        font-size: 12px;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 8px;
+    }
+    
+    .main-title {
+        font-size: 2em;
+    }
+}
+
+/* Animations */
+.preview-table-container,
+.sql-section,
+.stats-section {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Alertes personnalisées */
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: none;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}

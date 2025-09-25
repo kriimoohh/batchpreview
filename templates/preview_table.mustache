@@ -1,0 +1,392 @@
+{{!
+    Template pour le tableau de prévisualisation
+    Context variables:
+    * rows - Array des données à afficher
+    * total_rows - Nombre total de lignes
+    * category_name - Nom de la catégorie
+    * category_id - ID de la catégorie
+    * has_data - Boolean si il y a des données
+    * timestamp - Horodatage
+}}
+
+<div class="preview-table-section">
+    {{#has_data}}
+        <!-- En-tête avec statistiques -->
+        <div class="preview-header">
+            <div class="header-content">
+                <h3 class="section-title">
+                    <i class="fa fa-table" aria-hidden="true"></i>
+                    {{#str}}affected_collaborate, local_batchpreview{{/str}}
+                </h3>
+                <div class="category-info">
+                    <span class="category-badge">
+                        <strong>{{category_name}}</strong> (ID: {{category_id}})
+                    </span>
+                </div>
+            </div>
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <span class="stat-number">{{total_rows}}</span>
+                    <span class="stat-label">{{#str}}total_affected, local_batchpreview{{/str}}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{timestamp}}</span>
+                    <span class="stat-label">{{#str}}generation_date, local_batchpreview{{/str}}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau principal -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-striped preview-table" id="preview-table">
+                    <thead class="table-header">
+                        <tr>
+                            <th scope="col" class="col-id">
+                                <i class="fa fa-hashtag" aria-hidden="true"></i>
+                                ID
+                            </th>
+                            <th scope="col" class="col-current">
+                                <i class="fa fa-times-circle text-danger" aria-hidden="true"></i>
+                                {{#str}}current_name, local_batchpreview{{/str}}
+                            </th>
+                            <th scope="col" class="col-new">
+                                <i class="fa fa-check-circle text-success" aria-hidden="true"></i>
+                                {{#str}}new_name, local_batchpreview{{/str}}
+                            </th>
+                            <th scope="col" class="col-course">
+                                <i class="fa fa-book" aria-hidden="true"></i>
+                                {{#str}}course_name, local_batchpreview{{/str}}
+                            </th>
+                            <th scope="col" class="col-category">
+                                <i class="fa fa-folder" aria-hidden="true"></i>
+                                {{#str}}category_name, local_batchpreview{{/str}}
+                            </th>
+                            <th scope="col" class="col-status">
+                                <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#rows}}
+                        <tr class="preview-row {{#has_changes}}row-changed{{/has_changes}}{{^has_changes}}row-unchanged{{/has_changes}}" 
+                            data-collaborate-id="{{collaborate_id}}">
+                            <td class="collaborate-id">
+                                <span class="id-badge">{{collaborate_id}}</span>
+                            </td>
+                            <td class="current-name">
+                                <div class="name-container">
+                                    <span class="name-text current">{{current_name}}</span>
+                                    {{#has_changes}}
+                                    <span class="change-indicator old">
+                                        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                                    </span>
+                                    {{/has_changes}}
+                                </div>
+                            </td>
+                            <td class="new-name">
+                                <div class="name-container">
+                                    <span class="name-text new {{#has_changes}}changed{{/has_changes}}">{{new_name}}</span>
+                                    {{#has_changes}}
+                                    <span class="change-indicator new">
+                                        <i class="fa fa-check" aria-hidden="true"></i>
+                                    </span>
+                                    {{/has_changes}}
+                                </div>
+                            </td>
+                            <td class="course-name">
+                                <span class="course-text" title="{{course_name}}">{{course_name}}</span>
+                            </td>
+                            <td class="category-info">
+                                <div class="category-details">
+                                    <span class="category-text">{{category_name}}</span>
+                                    <span class="category-id-small">({{category_id}})</span>
+                                </div>
+                            </td>
+                            <td class="status-col">
+                                {{#has_changes}}
+                                <span class="status-badge status-changed">
+                                    <i class="fa fa-edit" aria-hidden="true"></i>
+                                    {{#str}}changes_detected, local_batchpreview{{/str}}
+                                </span>
+                                {{/has_changes}}
+                                {{^has_changes}}
+                                <span class="status-badge status-unchanged">
+                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                    {{#str}}no_changes, local_batchpreview{{/str}}
+                                </span>
+                                {{/has_changes}}
+                            </td>
+                        </tr>
+                        {{/rows}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Légende -->
+        <div class="table-legend">
+            <div class="legend-item">
+                <span class="legend-color changed"></span>
+                <span class="legend-text">{{#str}}changes_detected, local_batchpreview{{/str}}</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color unchanged"></span>
+                <span class="legend-text">{{#str}}no_changes, local_batchpreview{{/str}}</span>
+            </div>
+        </div>
+
+    {{/has_data}}
+    {{^has_data}}
+        <!-- Message si aucune donnée -->
+        <div class="no-data-container">
+            <div class="no-data-content">
+                <i class="fa fa-search fa-3x text-muted" aria-hidden="true"></i>
+                <h4 class="no-data-title">{{#str}}no_results, local_batchpreview{{/str}}</h4>
+                <p class="no-data-message">
+                    Aucune salle Collaborate trouvée pour la catégorie <strong>{{category_id}}</strong>.
+                </p>
+                <div class="no-data-suggestions">
+                    <p>Suggestions :</p>
+                    <ul>
+                        <li>Vérifiez que l'ID de catégorie est correct</li>
+                        <li>Assurez-vous que des cours existent dans cette catégorie</li>
+                        <li>Vérifiez que des salles Collaborate sont configurées</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {{/has_data}}
+</div>
+
+<style>
+/* Styles spécifiques au tableau de prévisualisation */
+.preview-table-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.preview-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.header-content {
+    flex: 1;
+}
+
+.section-title {
+    margin: 0 0 10px 0;
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.category-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.stats-summary {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    text-align: center;
+    background: rgba(255,255,255,0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+.table-container {
+    padding: 0;
+}
+
+.preview-table {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+.table-header th {
+    background: #343a40;
+    color: white;
+    padding: 15px 10px;
+    border: none;
+    font-weight: 600;
+    text-align: left;
+}
+
+.preview-row {
+    transition: all 0.3s ease;
+}
+
+.preview-row:hover {
+    background: #f8f9fa !important;
+    transform: translateX(2px);
+}
+
+.row-changed {
+    border-left: 4px solid #28a745;
+}
+
+.row-unchanged {
+    border-left: 4px solid #6c757d;
+}
+
+.id-badge {
+    background: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.name-container {
+    position: relative;
+}
+
+.name-text.current {
+    color: #dc3545;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.name-text.new.changed {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.change-indicator {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.8em;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.status-changed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-unchanged {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.table-legend {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+
+.legend-color.changed {
+    background: #28a745;
+}
+
+.legend-color.unchanged {
+    background: #6c757d;
+}
+
+.no-data-container {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.no-data-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.no-data-title {
+    color: #6c757d;
+    margin: 20px 0 15px 0;
+}
+
+.no-data-message {
+    color: #6c757d;
+    margin-bottom: 25px;
+}
+
+.no-data-suggestions {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.no-data-suggestions ul {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .preview-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .stats-summary {
+        justify-content: center;
+    }
+    
+    .table-responsive {
+        font-size: 0.8em;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 8px 5px;
+    }
+    
+    .name-text {
+        display: block;
+        margin-bottom: 5px;
+    }
+}
+</style>

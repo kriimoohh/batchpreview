@@ -1,0 +1,484 @@
+{{!
+    Template pour le générateur SQL
+    Context variables:
+    * sql_code - Le code SQL généré
+    * category_id - ID de la catégorie
+    * total_affected - Nombre total d'enregistrements affectés
+    * timestamp - Horodatage
+    * filename - Nom du fichier pour le téléchargement
+}}
+
+<div class="sql-generator-section">
+    <!-- En-tête de la section SQL -->
+    <div class="sql-header">
+        <div class="header-content">
+            <h3 class="section-title">
+                <i class="fa fa-code" aria-hidden="true"></i>
+                {{#str}}sql_code, local_batchpreview{{/str}}
+            </h3>
+            <div class="sql-info">
+                <span class="info-item">
+                    <i class="fa fa-database" aria-hidden="true"></i>
+                    {{total_affected}} enregistrements affectés
+                </span>
+                <span class="info-item">
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                    {{timestamp}}
+                </span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="btn btn-outline-light btn-sm" id="toggle-sql-view">
+                <i class="fa fa-expand" aria-hidden="true"></i>
+                Plein écran
+            </button>
+        </div>
+    </div>
+
+    <!-- Alertes de sécurité -->
+    <div class="safety-alerts">
+        <div class="alert alert-danger safety-warning">
+            <div class="alert-header">
+                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                <strong>{{#str}}backup_reminder, local_batchpreview{{/str}}</strong>
+            </div>
+            <p class="alert-message">{{#str}}execute_warning, local_batchpreview{{/str}}</p>
+        </div>
+        
+        <div class="alert alert-info safety-steps">
+            <div class="alert-header">
+                <i class="fa fa-list-ol" aria-hidden="true"></i>
+                <strong>{{#str}}recommendations, local_batchpreview{{/str}}</strong>
+            </div>
+            <ol class="safety-checklist">
+                <li>{{#str}}step1, local_batchpreview{{/str}}</li>
+                <li>{{#str}}step2, local_batchpreview{{/str}}</li>
+                <li>{{#str}}step3, local_batchpreview{{/str}}</li>
+                <li>{{#str}}step4, local_batchpreview{{/str}}</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Onglets pour les différentes vues -->
+    <div class="sql-tabs">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="complete-sql-tab" data-toggle="tab" href="#complete-sql" role="tab">
+                    <i class="fa fa-file-code-o" aria-hidden="true"></i>
+                    Script complet
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="verification-tab" data-toggle="tab" href="#verification" role="tab">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                    Vérification uniquement
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="update-only-tab" data-toggle="tab" href="#update-only" role="tab">
+                    <i class="fa fa-edit" aria-hidden="true"></i>
+                    Mise à jour uniquement
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Contenu des onglets -->
+    <div class="tab-content sql-content">
+        <!-- Script complet -->
+        <div class="tab-pane fade show active" id="complete-sql" role="tabpanel">
+            <div class="sql-container">
+                <div class="sql-toolbar">
+                    <div class="toolbar-left">
+                        <span class="code-info">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i>
+                            Script SQL complet avec vérification et mise à jour
+                        </span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button type="button" class="btn btn-sm btn-secondary" id="format-sql">
+                            <i class="fa fa-magic" aria-hidden="true"></i>
+                            Formater
+                        </button>
+                        <button type="button" class="btn btn-sm btn-info" id="copy-complete-sql">
+                            <i class="fa fa-copy" aria-hidden="true"></i>
+                            Copier
+                        </button>
+                    </div>
+                </div>
+                <textarea class="sql-textarea" id="complete-sql-code" readonly>{{sql_code}}</textarea>
+            </div>
+        </div>
+
+        <!-- Vérification uniquement -->
+        <div class="tab-pane fade" id="verification" role="tabpanel">
+            <div class="sql-container">
+                <div class="sql-toolbar">
+                    <div class="toolbar-left">
+                        <span class="code-info">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                            Requête de vérification - Exécutez ceci en premier
+                        </span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button type="button" class="btn btn-sm btn-info" id="copy-verification-sql">
+                            <i class="fa fa-copy" aria-hidden="true"></i>
+                            Copier
+                        </button>
+                    </div>
+                </div>
+                <textarea class="sql-textarea verification-sql" id="verification-sql-code" readonly>{{verification_sql}}</textarea>
+            </div>
+        </div>
+
+        <!-- Mise à jour uniquement -->
+        <div class="tab-pane fade" id="update-only" role="tabpanel">
+            <div class="sql-container">
+                <div class="sql-toolbar">
+                    <div class="toolbar-left">
+                        <span class="code-info">
+                            <i class="fa fa-warning text-warning" aria-hidden="true"></i>
+                            Requête de mise à jour - Attention! Modifie la base de données
+                        </span>
+                    </div>
+                    <div class="toolbar-right">
+                        <button type="button" class="btn btn-sm btn-warning" id="copy-update-sql">
+                            <i class="fa fa-copy" aria-hidden="true"></i>
+                            Copier
+                        </button>
+                    </div>
+                </div>
+                <textarea class="sql-textarea update-sql" id="update-sql-code" readonly>{{update_sql}}</textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions principales -->
+    <div class="sql-actions">
+        <div class="action-group primary-actions">
+            <button type="button" class="btn btn-primary btn-lg" id="copy-main-sql">
+                <i class="fa fa-copy" aria-hidden="true"></i>
+                {{#str}}copy_sql, local_batchpreview{{/str}}
+            </button>
+            <button type="button" class="btn btn-secondary btn-lg" id="download-sql">
+                <i class="fa fa-download" aria-hidden="true"></i>
+                {{#str}}download_sql, local_batchpreview{{/str}}
+            </button>
+        </div>
+        <div class="action-group secondary-actions">
+            <button type="button" class="btn btn-outline-info" id="preview-in-modal">
+                <i class="fa fa-eye" aria-hidden="true"></i>
+                Prévisualiser en grand
+            </button>
+            <button type="button" class="btn btn-outline-success" id="validate-sql">
+                <i class="fa fa-check-circle" aria-hidden="true"></i>
+                Valider la syntaxe
+            </button>
+        </div>
+    </div>
+
+    <!-- Informations sur le fichier -->
+    <div class="file-info">
+        <div class="file-details">
+            <span class="file-name">
+                <i class="fa fa-file-text-o" aria-hidden="true"></i>
+                Nom du fichier: <strong>{{filename}}</strong>
+            </span>
+            <span class="file-size" id="file-size">
+                <i class="fa fa-hdd-o" aria-hidden="true"></i>
+                Taille: <span id="sql-size">Calcul...</span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour prévisualisation plein écran -->
+<div class="modal fade" id="sql-preview-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa fa-code" aria-hidden="true"></i>
+                    Prévisualisation SQL
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre id="modal-sql-content" class="sql-preview-content"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="modal-copy-sql">
+                    <i class="fa fa-copy" aria-hidden="true"></i>
+                    Copier
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Styles pour le générateur SQL */
+.sql-generator-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.sql-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.section-title {
+    margin: 0 0 10px 0;
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.sql-info {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.info-item {
+    background: rgba(255,255,255,0.1);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+.safety-alerts {
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.alert {
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.alert-header {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.safety-checklist {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+}
+
+.safety-checklist li {
+    margin-bottom: 5px;
+}
+
+.sql-tabs .nav-tabs {
+    background: #f8f9fa;
+    border: none;
+    padding: 0 20px;
+}
+
+.sql-tabs .nav-link {
+    border: none;
+    border-radius: 0;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.sql-tabs .nav-link.active {
+    background: white;
+    color: #495057;
+    border-bottom: 3px solid #007bff;
+}
+
+.sql-content {
+    padding: 0;
+}
+
+.sql-container {
+    position: relative;
+}
+
+.sql-toolbar {
+    background: #f8f9fa;
+    padding: 10px 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.code-info {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.sql-textarea {
+    width: 100%;
+    min-height: 300px;
+    border: none;
+    resize: vertical;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.verification-sql {
+    background: #1a365d;
+    color: #bee3f8;
+}
+
+.update-sql {
+    background: #744210;
+    color: #fbd38d;
+}
+
+.sql-actions {
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.action-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.file-info {
+    padding: 15px 20px;
+    background: #e9ecef;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.9em;
+}
+
+.file-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.sql-preview-content {
+    background: #2d3748;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 4px;
+    padding: 15px;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-x: auto;
+    max-height: 500px;
+}
+
+/* Animations et effets */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.sql-textarea:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #007bff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sql-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .sql-toolbar {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .sql-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-group {
+        justify-content: center;
+    }
+    
+    .file-details {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .sql-textarea {
+        font-size: 12px;
+        min-height: 250px;
+    }
+}
+
+/* États des boutons */
+.btn.copied {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.btn.copied::after {
+    content: ' ✓';
+}
+
+/* Indicateur de validation */
+.validation-result {
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.validation-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.validation-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+</style>
+
+<script>
+// Calculer la taille du fichier SQL
+document.addEventListener('DOMContentLoaded', function() {
+    const sqlCode = document.getElementById('complete-sql-code').value;
+    const sizeInBytes = new Blob([sqlCode]).size;
+    const sizeInKB = (sizeInBytes / 1024).toFixed(2);
+    document.getElementById('sql-size').textContent = sizeInKB + ' KB';
+});
+</script>
