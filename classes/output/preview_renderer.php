@@ -147,10 +147,14 @@ class sql_generator implements renderable, templatable {
         $table_info = get_system_table_info($this->system_type);
         $table_name = 'mdl_' . $table_info['table'];
         
-        $name_parts = ["'{$this->prefix}'", "mdl_course.fullname"];
-        
+        // Échapper les apostrophes pour le SQL généré.
+        $safe_prefix = str_replace("'", "''", $this->prefix);
+        $safe_suffix = str_replace("'", "''", $this->suffix);
+
+        $name_parts = ["'{$safe_prefix}'", "mdl_course.fullname"];
+
         if (!empty($this->suffix)) {
-            $name_parts[] = "'{$this->suffix}'";
+            $name_parts[] = "'{$safe_suffix}'";
         }
         
         if ($this->options['show_category_id']) {

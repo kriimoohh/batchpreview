@@ -6,11 +6,21 @@ require_login();
 require_capability('moodle/site:config', context_system::instance());
 
 $categoryid = required_param('categoryid', PARAM_INT);
-$system_type = optional_param('system_type', 'collaborate', PARAM_TEXT);
+$system_type = optional_param('system_type', 'collaborate', PARAM_ALPHANUMEXT);
 $prefix = optional_param('prefix', 'Salle de Travaux Dirigés', PARAM_TEXT);
 $suffix = optional_param('suffix', 'SOCIO - P10L3S5', PARAM_TEXT);
 $show_category_id = optional_param('show_category_id', 1, PARAM_INT);
 $show_category_name = optional_param('show_category_name', 0, PARAM_INT);
+
+// Validation whitelist du system_type.
+$allowed_systems = array('collaborate', 'bigbluebuttonbn');
+if (!in_array($system_type, $allowed_systems)) {
+    throw new moodle_exception('invalid_system', 'local_batchpreview');
+}
+
+// Limiter la longueur des prefix/suffix.
+$prefix = core_text::substr($prefix, 0, 100);
+$suffix = core_text::substr($suffix, 0, 100);
 
 $PAGE->set_url('/local/batchpreview/preview.php', array('categoryid' => $categoryid));
 $PAGE->set_context(context_system::instance());
@@ -92,7 +102,10 @@ function get_system_table_info($system_type) {
         )
     );
     
-    return isset($systems[$system_type]) ? $systems[$system_type] : $systems['collaborate'];
+    if (!isset($systems[$system_type])) {
+        throw new moodle_exception('invalid_system', 'local_batchpreview');
+    }
+    return $systems[$system_type];
 }
 
 $preview_data = get_preview_data($categoryid, $system_type, $prefix, $suffix, $show_category_id, $show_category_name);
@@ -144,26 +157,26 @@ if (empty($preview_data)) {
     foreach ($preview_data as $row) {
         $current_name_input = html_writer::tag('input', '', array(
             'type' => 'text',
-            'value' => $row['current_name'],
+            'value' => s($row['current_name']),
             'class' => 'current-name-input',
-            'data-room-id' => $row['room_id'],
+            'data-room-id' => (int)$row['room_id'],
             'readonly' => 'readonly'
         ));
-        
+
         $new_name_input = html_writer::tag('input', '', array(
             'type' => 'text',
-            'value' => $row['new_name'],
+            'value' => s($row['new_name']),
             'class' => 'new-name-input',
-            'data-room-id' => $row['room_id']
+            'data-room-id' => (int)$row['room_id']
         ));
-        
+
         $table->data[] = array(
-            $row['room_id'],
+            (int)$row['room_id'],
             $current_name_input,
             $new_name_input,
-            $row['course_name'],
-            $row['category_name'] . ' (ID: ' . $row['category_id'] . ')',
-            $table_info['display_name']
+            s($row['course_name']),
+            s($row['category_name']) . ' (ID: ' . (int)$row['category_id'] . ')',
+            s($table_info['display_name'])
         );
     }
     
@@ -182,7 +195,7 @@ if (empty($preview_data)) {
     );
     
     echo html_writer::start_div('sql-container');
-    echo html_writer::tag('textarea', $sql_code, array(
+    echo html_writer::tag('textarea', s($sql_code), array(
         'id' => 'sql-code',
         'readonly' => 'readonly',
         'rows' => 10,
@@ -202,11 +215,11 @@ if (empty($preview_data)) {
     );
     // NOUVEAU: Instruction pour l'utilisateur
     echo html_writer::tag('div',
-        '<i class="fa fa-info-circle"></i> ' . get_string('editable_names', 'local_batchpreview'),
+        html_writer::tag('i', '', array('class' => 'fa fa-info-circle')) . ' ' . get_string('editable_names', 'local_batchpreview'),
         array('class' => 'alert alert-info', 'style' => 'margin: 15px 0; font-size: 0.9em;')
     );
-    echo html_writer::tag('button', 
-    '<i class="fa fa-check"></i> ' . get_string('apply_changes', 'local_batchpreview'),
+    echo html_writer::tag('button',
+    html_writer::tag('i', '', array('class' => 'fa fa-check')) . ' ' . get_string('apply_changes', 'local_batchpreview'),
     array(
         'id' => 'apply-changes-btn', 
         'class' => 'btn btn-primary btn-lg',
@@ -226,10 +239,14 @@ function generate_sql_code($categoryid, $system_type, $prefix, $suffix, $show_ca
     $table_info = get_system_table_info($system_type);
     $table_name = 'mdl_' . $table_info['table'];
     
-    $name_parts = array("'$prefix'", "mdl_course.fullname");
-    
+    // Échapper les apostrophes pour le SQL généré.
+    $safe_prefix = str_replace("'", "''", $prefix);
+    $safe_suffix = str_replace("'", "''", $suffix);
+
+    $name_parts = array("'$safe_prefix'", "mdl_course.fullname");
+
     if (!empty($suffix)) {
-        $name_parts[] = "'$suffix'";
+        $name_parts[] = "'$safe_suffix'";
     }
     
     if ($show_category_id) {

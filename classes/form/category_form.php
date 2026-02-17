@@ -30,16 +30,18 @@ class category_form extends \moodleform {
         $mform->addHelpButton('categoryid', 'categoryid', 'local_batchpreview');
         
         // Préfixe personnalisé (optionnel)
-        $mform->addElement('text', 'prefix', 'Préfixe personnalisé', 
-                          array('size' => 50, 'placeholder' => 'Salle de Travaux Dirigés'));
+        $mform->addElement('text', 'prefix', 'Préfixe personnalisé',
+                          array('size' => 50, 'maxlength' => 100, 'placeholder' => 'Salle de Travaux Dirigés'));
         $mform->setType('prefix', PARAM_TEXT);
         $mform->setDefault('prefix', 'Salle de Travaux Dirigés');
-        
+        $mform->addRule('prefix', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
+
         // Suffixe personnalisé (optionnel)
-        $mform->addElement('text', 'suffix', 'Suffixe personnalisé', 
-                          array('size' => 30, 'placeholder' => 'SOCIO - P10L3S5'));
+        $mform->addElement('text', 'suffix', 'Suffixe personnalisé',
+                          array('size' => 30, 'maxlength' => 100, 'placeholder' => 'SOCIO - P10L3S5'));
         $mform->setType('suffix', PARAM_TEXT);
         $mform->setDefault('suffix', 'SOCIO - P10L3S5');
+        $mform->addRule('suffix', get_string('maximumchars', '', 100), 'maxlength', 100, 'client');
         
         // Options d'affichage
         $mform->addElement('header', 'display_options', 'Options d\'affichage');

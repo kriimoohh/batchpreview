@@ -185,8 +185,10 @@ define(['jquery'], function($) {
                     data: JSON.stringify(requestData),
                     timeout: 45000, // 45 secondes de timeout
                     beforeSend: function(xhr) {
-                        // Ajouter des headers de sécurité si nécessaire
-                        console.log('Envoi de la requête AJAX...');
+                        // CSRF: Envoyer le sesskey Moodle
+                        if (typeof M !== 'undefined' && M.cfg && M.cfg.sesskey) {
+                            xhr.setRequestHeader('X-Sesskey', M.cfg.sesskey);
+                        }
                     },
                     success: function(response, textStatus, xhr) {
                         console.log('Réponse reçue:', {

@@ -139,6 +139,10 @@ function initPreviewFeatures() {
             var xhr = new XMLHttpRequest();
             xhr.open('POST', ajaxUrl, true);
             xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+            // CSRF: Envoyer le sesskey Moodle
+            if (typeof M !== 'undefined' && M.cfg && M.cfg.sesskey) {
+                xhr.setRequestHeader('X-Sesskey', M.cfg.sesskey);
+            }
             xhr.timeout = 45000;
             
             xhr.onload = function() {

@@ -3,17 +3,14 @@
 require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
-// Debug: Activer l'affichage des erreurs en développement
-if ($CFG->debug >= DEBUG_DEVELOPER) {
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
-}
-
-// Log de debug initial
-error_log('apply.php: Début du script - Method: ' . $_SERVER['REQUEST_METHOD']);
-
 require_login();
 require_capability('moodle/site:config', context_system::instance());
+
+// CSRF: Accepter le sesskey depuis le header HTTP (requêtes AJAX JSON)
+if (!empty($_SERVER['HTTP_X_SESSKEY'])) {
+    $_REQUEST['sesskey'] = $_SERVER['HTTP_X_SESSKEY'];
+}
+require_sesskey();
 
 $PAGE->set_url('/local/batchpreview/apply.php');
 $PAGE->set_context(context_system::instance());
@@ -30,8 +27,7 @@ function send_json_response($data, $http_code = 200) {
     if ($http_code !== 200) {
         http_response_code($http_code);
     }
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
-    error_log('apply.php: Réponse envoyée - ' . json_encode($data));
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
     exit;
 }
 
@@ -50,7 +46,7 @@ function get_system_table_info($system_type) {
         )
     );
     
-    return isset($systems[$system_type]) ? $systems[$system_type] : $systems['collaborate'];
+    return isset($systems[$system_type]) ? $systems[$system_type] : null;
 }
 
 // Vérifier la méthode HTTP
@@ -64,8 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 try {
     // Récupérer les données POST
     $raw_input = file_get_contents('php://input');
-    error_log('apply.php: Raw input reçu - ' . substr($raw_input, 0, 200) . '...');
-    
+
     if (empty($raw_input)) {
         send_json_response([
             'success' => false, 
@@ -84,23 +79,23 @@ try {
     
     // Validation des paramètres avec valeurs par défaut
     $categoryid = isset($input['categoryid']) ? intval($input['categoryid']) : 0;
-    $system_type = isset($input['system_type']) ? trim($input['system_type']) : '';
+    $system_type = isset($input['system_type']) ? clean_param(trim($input['system_type']), PARAM_ALPHANUMEXT) : '';
     $changes = isset($input['changes']) ? $input['changes'] : array();
-    
-    error_log('apply.php: Paramètres validés - categoryid: ' . $categoryid . ', system_type: ' . $system_type . ', changes: ' . count($changes));
-    
+
     // Validation des paramètres
     if ($categoryid <= 0) {
         send_json_response([
-            'success' => false, 
-            'error' => 'ID de catégorie invalide: ' . $categoryid
+            'success' => false,
+            'error' => 'ID de catégorie invalide'
         ], 400);
     }
-    
-    if (empty($system_type)) {
+
+    // Validation whitelist du system_type.
+    $allowed_systems = array('collaborate', 'bigbluebuttonbn');
+    if (!in_array($system_type, $allowed_systems)) {
         send_json_response([
-            'success' => false, 
-            'error' => 'Type de système manquant'
+            'success' => false,
+            'error' => 'Type de système invalide'
         ], 400);
     }
     
@@ -123,22 +118,20 @@ try {
     $table_info = get_system_table_info($system_type);
     if (!$table_info) {
         send_json_response([
-            'success' => false, 
-            'error' => 'Type de système invalide: ' . $system_type
+            'success' => false,
+            'error' => 'Type de système invalide'
         ], 400);
     }
-    
+
     $table_name = $table_info['table'];
-    
+
     // Vérifier que la table existe
     if (!$DB->get_manager()->table_exists($table_name)) {
         send_json_response([
-            'success' => false, 
-            'error' => 'Table inexistante: ' . $table_name
+            'success' => false,
+            'error' => 'Table du système non disponible'
         ], 400);
     }
-    
-    error_log('apply.php: Validation OK, début transaction');
     
     // Démarrer la transaction
     $transaction = $DB->start_delegated_transaction();
@@ -156,15 +149,20 @@ try {
             }
             
             $room_id = intval($change['room_id']);
-            $new_name = trim($change['new_name']);
-            
+            $new_name = clean_param(trim($change['new_name']), PARAM_TEXT);
+
             if ($room_id <= 0) {
-                $errors[] = "Modification #$index: ID invalide ($room_id)";
+                $errors[] = "Modification #$index: ID invalide";
                 continue;
             }
-            
+
             if (empty($new_name)) {
                 $errors[] = "Modification #$index: nom vide pour l'enregistrement $room_id";
+                continue;
+            }
+
+            if (core_text::strlen($new_name) > 255) {
+                $errors[] = "Modification #$index: nom trop long pour l'enregistrement $room_id (max 255 caractères)";
                 continue;
             }
             
@@ -198,22 +196,20 @@ try {
             
             // Vérifier si le changement est nécessaire
             if ($record->name === $new_name) {
-                error_log("apply.php: Pas de changement nécessaire pour l'ID $room_id");
                 continue;
             }
-            
+
             // Mettre à jour le nom
             $update_result = $DB->set_field($table_name, 'name', $new_name, array('id' => $room_id));
-            
+
             if ($update_result) {
                 $updated_count++;
-                error_log("apply.php: Mise à jour réussie pour l'ID $room_id: '{$record->name}' -> '$new_name'");
             } else {
                 $errors[] = "Échec de mise à jour pour l'enregistrement $room_id";
             }
             
         } catch (Exception $e) {
-            $errors[] = "Erreur lors du traitement de l'ID $room_id: " . $e->getMessage();
+            $errors[] = "Erreur lors du traitement de l'ID $room_id";
             error_log('apply.php: Erreur sur ID ' . $room_id . ' - ' . $e->getMessage());
         }
     }
@@ -221,9 +217,6 @@ try {
     // Décider si on valide ou annule la transaction
     if (empty($errors) && $updated_count > 0) {
         $transaction->allow_commit();
-        
-        // Log de l'activité (simplifié)
-        error_log('apply.php: Transaction validée - ' . $updated_count . ' modifications appliquées');
         
         send_json_response([
             'success' => true, 
@@ -252,21 +245,19 @@ try {
     }
     
 } catch (Exception $e) {
-    error_log('apply.php: Exception globale - ' . $e->getMessage());
-    error_log('apply.php: Stack trace - ' . $e->getTraceAsString());
-    
+    error_log('apply.php: Exception - ' . $e->getMessage());
+
     if (isset($transaction)) {
         try {
             $transaction->rollback();
         } catch (Exception $rollback_exception) {
-            error_log('apply.php: Erreur lors du rollback - ' . $rollback_exception->getMessage());
+            error_log('apply.php: Erreur rollback - ' . $rollback_exception->getMessage());
         }
     }
-    
+
     send_json_response([
-        'success' => false, 
-        'error' => 'Erreur serveur: ' . $e->getMessage(),
-        'debug_info' => ($CFG->debug >= DEBUG_DEVELOPER) ? $e->getTraceAsString() : null
+        'success' => false,
+        'error' => 'Une erreur serveur est survenue. Consultez les logs pour plus de détails.'
     ], 500);
 }
 ?>

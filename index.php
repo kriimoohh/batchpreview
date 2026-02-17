@@ -20,26 +20,7 @@ $PAGE->requires->css('/local/batchpreview/styles/styles.css');
 // Créer le formulaire
 $mform = new \local_batchpreview\form\category_form();
 
-echo $OUTPUT->header();
-
-// Titre avec icône
-echo html_writer::start_div('batch-preview-container');
-echo html_writer::tag('div', 
-    html_writer::tag('i', '', array('class' => 'fa fa-search-plus')) . ' ' .
-    get_string('batchpreview', 'local_batchpreview'), 
-    array('class' => 'main-title')
-);
-
-// Description
-echo html_writer::tag('div', 
-    'Cet outil vous permet de prévisualiser les modifications qui seront apportées aux salles Collaborate avant de les appliquer.',
-    array('class' => 'description')
-);
-
-// Afficher le formulaire
-$mform->display();
-
-// Si le formulaire est soumis, rediriger vers la page de prévisualisation
+// Traiter la soumission avant l'affichage.
 if ($data = $mform->get_data()) {
     $params = array(
         'categoryid' => $data->categoryid,
@@ -49,31 +30,30 @@ if ($data = $mform->get_data()) {
         'show_category_id' => isset($data->show_category_id) ? 1 : 0,
         'show_category_name' => isset($data->show_category_name) ? 1 : 0
     );
-    
+
     redirect(new moodle_url('/local/batchpreview/preview.php', $params));
 }
 
-echo html_writer::end_div();
+echo $OUTPUT->header();
 
-// CORRECTION: JavaScript simple pour l'animation (optionnel)
-echo '<script type="text/javascript">
-document.addEventListener("DOMContentLoaded", function() {
-    console.log("Index page JavaScript loaded");
-    
-    // Animation simple pour les fieldsets si jQuery est disponible
-    function initAnimation() {
-        if (typeof $ !== "undefined") {
-            $(".mform fieldset").hide().fadeIn(800);
-            console.log("Animation des fieldsets activée");
-        } else {
-            console.log("jQuery non disponible pour l\'animation");
-        }
-    }
-    
-    // Essayer après un délai
-    setTimeout(initAnimation, 500);
-});
-</script>';
+// Titre avec icône
+echo html_writer::start_div('batch-preview-container');
+echo html_writer::tag('div',
+    html_writer::tag('i', '', array('class' => 'fa fa-search-plus')) . ' ' .
+    get_string('batchpreview', 'local_batchpreview'),
+    array('class' => 'main-title')
+);
+
+// Description
+echo html_writer::tag('div',
+    get_string('description', 'local_batchpreview'),
+    array('class' => 'description')
+);
+
+// Afficher le formulaire
+$mform->display();
+
+echo html_writer::end_div();
 
 echo $OUTPUT->footer();
 ?>
