@@ -63,3 +63,4 @@ $string['changes_applied'] = 'modifications applied successfully';
 $string['no_changes_apply'] = 'No changes to apply';
 $string['operation_irreversible'] = 'This operation is irreversible';
 $string['database_backup_warning'] = 'Make sure to backup your database first';
+$string['description'] = 'This tool allows you to preview changes that will be made to Collaborate rooms before applying them.';

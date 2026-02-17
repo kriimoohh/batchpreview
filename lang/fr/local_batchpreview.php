@@ -33,3 +33,4 @@ $string['changes_applied'] = 'modifications appliquées avec succès';
 $string['no_changes_apply'] = 'Aucune modification à appliquer';
 $string['operation_irreversible'] = 'Cette opération est irréversible';
 $string['database_backup_warning'] = 'Assurez-vous de sauvegarder votre base de données d\'abord';
+$string['description'] = 'Cet outil vous permet de prévisualiser les modifications qui seront apportées aux salles Collaborate avant de les appliquer.';
